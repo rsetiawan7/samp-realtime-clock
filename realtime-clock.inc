@@ -28,14 +28,22 @@ forward OnWorldTimeUpdate(hour, minute);
 
 // Non-public functions
 
+stock RealTime_SyncPlayerWorldTime(playerid)
+{
+  if (!IsPlayerConnected(playerid))
+  {
+    return 0;
+  }
+
+  SetPlayerTime(playerid, RealTime_GetHour(), RealTime_GetMinute());
+  return 1;
+}
+
 stock void:RealTime_UpdatePlayerWorldTime()
 {
   for (new p = 0; p < MAX_PLAYERS; p++)
   {
-    if (IsPlayerConnected(p))
-    {
-      SetPlayerTime(p, RealTime_GetHour(), RealTime_GetMinute());
-    }
+    RealTime_SyncPlayerWorldTime(p);
   }
 }
 

@@ -125,6 +125,9 @@ void:RealTime_SetInterval(interval, bool:restart_timer = true);
 
 // Set current time with hour and minute.
 void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true);
+
+// Sync current player to current time.
+RealTime_SyncPlayerWorldTime(playerid);
 ```
 
 ### Callbacks
