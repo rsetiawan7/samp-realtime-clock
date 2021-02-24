@@ -1,0 +1,52 @@
+{
+	"user": "rsetiawan7",
+	"repo": "samp-realtime-clock",
+	"entry": "filterscripts/realtime_clock.pwn",
+	"output": "filterscripts/realtime_clock.amx",
+	"dependencies": [
+		"sampctl/samp-stdlib"
+	],
+	"runtimes": [
+		{
+			"name": "test",
+			"version": "0.3.DL",
+			"mode": "y_testing",
+			"rcon_password": "password",
+			"port": 8888,
+			"hostname": "SA-MP Server",
+			"maxplayers": 50,
+			"language": ""
+		},
+		{
+			"name": "dev",
+			"version": "0.3.DL",
+			"mode": "server",
+			"gamemodes": [
+				"bare"
+			],
+			"filterscripts": [
+				"realtime_clock"
+			],
+			"rcon_password": "password",
+			"port": 8888,
+			"hostname": "SA-MP Server",
+			"maxplayers": 50,
+			"language": "English"
+		}
+	],
+	"build": {
+		"version": "3.10.7",
+		"args": [
+			"-;+",
+			"-(+",
+			"-d3",
+			"-Z+"
+		],
+		"includes": [
+			"."
+		],
+		"constants": {
+			"MAX_PLAYERS": "50"
+		}
+	}
+}
