@@ -49,21 +49,33 @@ stock RealTime_GetMinute()
   return g_RT_Minute;
 }
 
-stock void:RealTime_SetHour(hour)
+stock RealTime_GetInterval()
+{
+  return g_RT_TimerInterval;
+}
+
+stock void:RealTime_SetHour(hour, bool:broadcast = true)
 {
   g_RT_Hour = hour % 24;
   RealTime_UpdatePlayerWorldTime();
+
+  if (broadcast)
+  {
+    // Broadcast the callback.
+    CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
+  }
 }
 
-stock void:RealTime_SetMinute(minute)
+stock void:RealTime_SetMinute(minute, bool:broadcast = true)
 {
   g_RT_Minute = minute % 60;
   RealTime_UpdatePlayerWorldTime();
-}
 
-stock void:RealTime_StartTime()
-{
-  g_RT_Timer = SetTimer("RealTime_UpdateWorldTime", g_RT_TimerInterval, true);
+  if (broadcast)
+  {
+    // Broadcast the callback.
+    CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
+  }
 }
 
 stock void:RealTime_StopTime()
@@ -71,10 +83,17 @@ stock void:RealTime_StopTime()
   KillTimer(g_RT_Timer);
 }
 
+stock void:RealTime_StartTime()
+{
+  // To make sure it's not running twice!
+  RealTime_StopTime();
+  g_RT_Timer = SetTimer("RealTime_UpdateWorldTime", RealTime_GetInterval(), true);
+}
+
 stock void:RealTime_Sync()
 {
-  // Stop the timer first.
-  RealTime_StopTime();
+  // Restart the timer first.
+  RealTime_StartTime();
 
   // Get time of server.
   gettime(g_RT_Hour, g_RT_Minute);
@@ -82,31 +101,31 @@ stock void:RealTime_Sync()
   // Then, update the player world time.
   RealTime_UpdatePlayerWorldTime();
 
-  // Don't forget to start the timer again.
-  RealTime_StartTime();
+  // Broadcast the callback.
+  CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
 }
 
-stock void:RealTime_RestartTimer()
-{
-  RealTime_StopTime();
-  RealTime_StartTime();
-}
-
-stock void:RealTime_SetInterval(interval)
+stock void:RealTime_SetInterval(interval, bool:restart_timer = true)
 {
   g_RT_TimerInterval = interval;
-  RealTime_RestartTimer();
+
+  if (restart_timer)
+  {
+    RealTime_StartTime();
+  }
 }
 
-stock void:RealTime_SetWorldTime(hour, minute, bool:reset_timer = true)
+stock void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true)
 {
-  g_RT_Hour = hour % 24;
-  g_RT_Minute = minute % 60;
+  RealTime_SetHour(hour);
+  RealTime_SetMinute(minute);
 
-  if (reset_timer)
+  if (restart_timer)
   {
-    RealTime_RestartTimer();
+    RealTime_StartTime();
   }
+
+  RealTime_UpdatePlayerWorldTime();
 }
 
 // Public functions
@@ -114,14 +133,13 @@ stock void:RealTime_SetWorldTime(hour, minute, bool:reset_timer = true)
 forward void:RealTime_UpdateWorldTime();
 public void:RealTime_UpdateWorldTime()
 {
-  g_RT_Minute = (RealTime_GetMinute() + 1) % 60;
+  RealTime_SetMinute(RealTime_GetMinute() + 1, false);
 
-  if (g_RT_Minute == 0)
+  if (RealTime_GetMinute() == 0)
   {
-    g_RT_Hour = (RealTime_GetHour() + 1) % 24;
+    RealTime_SetHour(RealTime_GetHour() + 1, false);
   }
 
-  printf("Hour: %02d | Minute: %02d", RealTime_GetHour(), RealTime_GetMinute());
   RealTime_UpdatePlayerWorldTime();
-  CallRemoteFunction("OnWorldTimeUpdate", "dd", g_RT_Hour, g_RT_Minute);
+  CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
 }
