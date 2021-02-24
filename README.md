@@ -2,6 +2,10 @@
 
 [![sampctl](https://img.shields.io/badge/sampctl-samp--realtime--clock-2f2f2f.svg?style=for-the-badge)](https://github.com/rsetiawan7/samp-realtime-clock)
 
+A library that sync your world time to your hour and minute for all players.
+
+You can control the world time whatever you like with some of short functions.
+
 <!--
 Short description of your library, why it's useful, some examples, pictures or
 videos. Link to your forum release thread too.
