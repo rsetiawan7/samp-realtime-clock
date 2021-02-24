@@ -7,7 +7,7 @@ new
   Text:g_TDClock
 ;
 
-stock void:SetClock(hour, minute)
+void:SetClock(hour, minute)
 {
   new
     timestr[8]
@@ -15,6 +15,26 @@ stock void:SetClock(hour, minute)
 
   format(timestr, sizeof(timestr), "%02d:%02d", hour, minute);
   TextDrawSetString(g_TDClock, timestr);
+}
+
+ShowClock(playerid)
+{
+  if (!IsPlayerConnected(playerid))
+  {
+    return 0;
+  }
+
+  return TextDrawShowForPlayer(playerid, g_TDClock);
+}
+
+ShowClockToAllPlayers()
+{
+  return TextDrawShowForAll(g_TDClock);
+}
+
+HideClockToAllPlayers()
+{
+  return TextDrawHideForAll(g_TDClock);
 }
 
 public OnFilterScriptInit()
@@ -31,18 +51,13 @@ public OnFilterScriptInit()
   TextDrawAlignment(g_TDClock, 3);
   TextDrawLetterSize(g_TDClock, 0.5, 1.5);
 
-  // Set interval.
-  RealTime_SetInterval(10000);
+  // Set interval and don't start the timer first.
+  RealTime_SetInterval(10000, false);
+
   // Sync realtime with server time.
   RealTime_Sync();
 
-  for (new p = 0; p < MAX_PLAYERS; p++)
-  {
-    if (IsPlayerConnected(p))
-    {
-      TextDrawShowForPlayer(p, g_TDClock);
-    }
-  }
+  ShowClockToAllPlayers();
 
   SetClock(RealTime_GetHour(), RealTime_GetMinute());
   return 1;
@@ -51,13 +66,13 @@ public OnFilterScriptInit()
 public OnFilterScriptExit()
 {
   RealTime_StopTime();
-  TextDrawDestroy(g_TDClock);
+  HideClockToAllPlayers();
   return 1;
 }
 
 public OnPlayerConnect(playerid)
 {
-  TextDrawShowForPlayer(playerid, g_TDClock);
+  ShowClock(playerid);
   SetPlayerTime(playerid, RealTime_GetHour(), RealTime_GetMinute());
   return 1;
 }
@@ -65,5 +80,13 @@ public OnPlayerConnect(playerid)
 public OnWorldTimeUpdate(hour, minute)
 {
   SetClock(hour, minute);
+
+  // Update the worldtime's server info.
+  new
+    str[16]
+  ;
+
+  format(str, sizeof(str), "worldtime %02d:%02d", hour, minute);
+  SendRconCommand(str);
   return 1;
 }
