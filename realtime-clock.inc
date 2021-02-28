@@ -123,7 +123,7 @@ stock void:RealTime_SetInterval(interval, bool:restart_timer = true)
   }
 }
 
-stock void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true)
+stock void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true, bool:broadcast = true)
 {
   RealTime_SetHour(hour);
   RealTime_SetMinute(minute);
@@ -134,6 +134,11 @@ stock void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true)
   }
 
   RealTime_UpdatePlayerWorldTime();
+
+  if (broadcast)
+  {
+    CallRemoteFunction("OnWorldTimeUpdate", "dd", hour, minute);
+  }
 }
 
 // Public functions
