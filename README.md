@@ -90,6 +90,33 @@ RealTime_StopTime();
 RealTime_SetWorldTime(0, 0, false);
 ```
 
+- Make player's interior brighter if he's in the interior.
+
+```c
+public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
+{
+  if (newinteriorid != 0)
+  {
+    // Freeze the player's time.
+    RealTime_FreezeForPlayer(playerid);
+    // Set player's time to 1:00 PM
+    SetPlayerTime(13, 0);
+    // Set player's weather to extra sunny.
+    SetPlayerWeather(playerid, 0);
+  }
+  else
+  {
+    // Freeze the player's time.
+    RealTime_UnfreezeForPlayer(playerid);
+    // Sync the player's time with current time.
+    RealTime_SyncPlayerWorldTime(playerid);
+    // Revert back the player's weather to current weather.
+    // This part depends on your code.
+  }
+  return 1;
+}
+```
+
 ### Functions
 
 ```c
@@ -128,6 +155,15 @@ void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true, bool:broadca
 
 // Sync current player to current time.
 RealTime_SyncPlayerWorldTime(playerid);
+
+// Check if the player's time is frozen or not.
+RealTime_IsPlayerFreezed(playerid);
+
+// Freeze player's time.
+RealTime_FreezeForPlayer(playerid);
+
+// Unfreeze player's time.
+RealTime_UnfreezeForPlayer(playerid);
 ```
 
 ### Callbacks

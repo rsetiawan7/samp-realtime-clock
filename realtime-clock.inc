@@ -11,22 +11,70 @@
 
 // Includes
 
-#include <a_samp>
+#if !defined _INC_a_samp
+  #error Include `<a_samp> first.`
+#endif
 
 // Variables
 
-new
-  g_RT_Hour = 0,
-  g_RT_Minute = 0,
-  g_RT_TimerInterval = 1000,
-  g_RT_Timer
-;
+static g_RT_Hour = 0;
+static g_RT_Minute = 0;
+static g_RT_TimerInterval = 1000;
+static g_RT_Timer;
+static bool:g_RT_PlayerTime_Freeze[MAX_PLAYERS];
 
 // Forwards
 
 forward OnWorldTimeUpdate(hour, minute);
 
 // Non-public functions
+
+stock RealTime_IsPlayerFreezed(playerid)
+{
+  if (playerid < 0 || playerid > MAX_PLAYERS)
+  {
+    return 0;
+  }
+
+  if (!IsPlayerConnected(playerid))
+  {
+    return 0;
+  }
+
+  return (g_RT_PlayerTime_Freeze[playerid] == true ? 1 : 0);
+}
+
+stock RealTime_FreezeForPlayer(playerid)
+{
+  if (playerid < 0 || playerid > MAX_PLAYERS)
+  {
+    return 0;
+  }
+
+  if (!IsPlayerConnected(playerid))
+  {
+    return 0;
+  }
+
+  g_RT_PlayerTime_Freeze[playerid] = true;
+  return 1;
+}
+
+stock RealTime_UnfreezeForPlayer(playerid)
+{
+  if (playerid < 0 || playerid > MAX_PLAYERS)
+  {
+    return 0;
+  }
+
+  if (!IsPlayerConnected(playerid))
+  {
+    return 0;
+  }
+
+  g_RT_PlayerTime_Freeze[playerid] = true;
+  return 1;
+}
 
 stock RealTime_SyncPlayerWorldTime(playerid)
 {
@@ -43,7 +91,10 @@ stock void:RealTime_UpdatePlayerWorldTime()
 {
   for (new p = 0; p < MAX_PLAYERS; p++)
   {
-    RealTime_SyncPlayerWorldTime(p);
+    if (!RealTime_IsPlayerFreezed(p))
+    {
+      RealTime_SyncPlayerWorldTime(p);
+    }
   }
 }
 
@@ -156,3 +207,79 @@ public void:RealTime_UpdateWorldTime()
   RealTime_UpdatePlayerWorldTime();
   CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
 }
+
+// Built-in callbacks
+
+#if defined FILTERSCRIPT
+  public OnFilterScriptInit()
+  {
+    for (new i = 0; i < MAX_PLAYERS; i++)
+    {
+      if (IsPlayerConnected(i))
+      {
+        RealTime_UnfreezeForPlayer(i);
+      }
+    }
+
+    #if defined RT_OnFilterScriptInit
+      return RT_OnFilterScriptInit();
+    #else
+      return 1;
+    #endif
+  }
+  #if defined _ALS_OnFilterScriptInit
+    #undef OnPlayerConnect
+  #else
+    #define _ALS_OnFilterScriptInit
+  #endif
+  #define OnFilterScriptInit RT_OnFilterScriptInit
+  #if defined RT_OnFilterScriptInit
+    forward RT_OnFilterScriptInit();
+  #endif
+#else
+  public OnGameModeInit()
+  {
+    for (new i = 0; i < MAX_PLAYERS; i++)
+    {
+      if (IsPlayerConnected(i))
+      {
+        RealTime_UnfreezeForPlayer(i);
+      }
+    }
+
+    #if defined RT_OnGameModeInit
+      return RT_OnGameModeInit();
+    #else
+      return 1;
+    #endif
+  }
+  #if defined _ALS_OnGameModeInit
+    #undef OnPlayerConnect
+  #else
+    #define _ALS_OnGameModeInit
+  #endif
+  #define OnGameModeInit RT_OnGameModeInit
+  #if defined RT_OnGameModeInit
+    forward RT_OnGameModeInit();
+  #endif
+#endif
+
+public OnPlayerConnect(playerid)
+{
+  g_RT_PlayerTime_Freeze[playerid] = false;
+
+  #if defined RT_OnPlayerConnect
+    return RT_OnPlayerConnect(playerid);
+  #else
+    return 1;
+  #endif
+}
+#if defined _ALS_OnPlayerConnect
+	#undef OnPlayerConnect
+#else
+	#define _ALS_OnPlayerConnect
+#endif
+#define OnPlayerConnect RT_OnPlayerConnect
+#if defined RT_OnPlayerConnect
+	forward RT_OnPlayerConnect(playerid);
+#endif
