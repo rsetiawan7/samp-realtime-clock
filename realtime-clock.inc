@@ -228,7 +228,7 @@ public void:RealTime_UpdateWorldTime()
     #endif
   }
   #if defined _ALS_OnFilterScriptInit
-    #undef OnPlayerConnect
+    #undef OnFilterScriptInit
   #else
     #define _ALS_OnFilterScriptInit
   #endif
@@ -254,7 +254,7 @@ public void:RealTime_UpdateWorldTime()
     #endif
   }
   #if defined _ALS_OnGameModeInit
-    #undef OnPlayerConnect
+    #undef OnGameModeInit
   #else
     #define _ALS_OnGameModeInit
   #endif
