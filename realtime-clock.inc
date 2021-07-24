@@ -72,7 +72,7 @@ stock RealTime_UnfreezeForPlayer(playerid)
     return 0;
   }
 
-  g_RT_PlayerTime_Freeze[playerid] = true;
+  g_RT_PlayerTime_Freeze[playerid] = false;
   return 1;
 }
 
