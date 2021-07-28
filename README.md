@@ -71,7 +71,7 @@ RealTime_SetInterval(30000);
 - Sync your current time with server time.
 
 ```c
-Realtime_Sync();
+RealTime_Sync(true);
 
 // Called after sync done.
 public OnWorldTimeUpdate(hour, minute)
@@ -145,7 +145,7 @@ void:RealTime_StopTime();
 void:RealTime_StartTime();
 
 // Sync current time with server time.
-void:RealTime_Sync();
+void:RealTime_Sync(server_time = true);
 
 // Set interval of time changer (in millisecond).
 void:RealTime_SetInterval(interval, bool:restart_timer = true);

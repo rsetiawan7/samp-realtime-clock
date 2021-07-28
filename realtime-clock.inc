@@ -9,12 +9,6 @@
 #endif
 #define _realtime_included
 
-// Includes
-
-#if !defined _INC_a_samp
-  #error Include `<a_samp> first.`
-#endif
-
 // Variables
 
 static g_RT_Hour = 0;
@@ -149,8 +143,14 @@ stock void:RealTime_StartTime()
   g_RT_Timer = SetTimer("RealTime_UpdateWorldTime", RealTime_GetInterval(), true);
 }
 
-stock void:RealTime_Sync()
+stock void:RealTime_Sync(server_time = true)
 {
+  // If params "server_time" enabled, it will get current server time.
+  if (server_time)
+  {
+    gettime(g_RT_Hour, g_RT_Minute);
+  }
+
   // Restart the timer first.
   RealTime_StartTime();
 
