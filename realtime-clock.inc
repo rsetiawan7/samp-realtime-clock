@@ -15,11 +15,25 @@ static g_RT_Hour = 0;
 static g_RT_Minute = 0;
 static g_RT_TimerInterval = 1000;
 static g_RT_Timer;
+static bool:g_RT_IsSyncWithServer;
 static bool:g_RT_PlayerTime_Freeze[MAX_PLAYERS];
 
 // Forwards
 
 forward OnWorldTimeUpdate(hour, minute);
+
+// Static functions
+
+static bool:RealTime_IsSyncWithServer()
+{
+  return g_RT_IsSyncWithServer;
+}
+
+static RealTime_SetSyncWithServer(bool:value)
+{
+  g_RT_IsSyncWithServer = value;
+  return 1;
+}
 
 // Non-public functions
 
@@ -140,7 +154,17 @@ stock void:RealTime_StartTime()
 {
   // To make sure it's not running twice!
   RealTime_StopTime();
-  g_RT_Timer = SetTimer("RealTime_UpdateWorldTime", RealTime_GetInterval(), true);
+
+  if (RealTime_IsSyncWithServer())
+  {
+    g_RT_TimerInterval = 1_000;
+    g_RT_Timer = SetTimer("RealTime_UpdateWorldTime", RealTime_GetInterval(), true);
+  }
+  else
+  {
+
+    g_RT_Timer = SetTimer("RealTime_UpdateWorldTime", RealTime_GetInterval(), true);
+  }
 }
 
 stock void:RealTime_Sync(server_time = true)
@@ -148,7 +172,11 @@ stock void:RealTime_Sync(server_time = true)
   // If params "server_time" enabled, it will get current server time.
   if (server_time)
   {
-    gettime(g_RT_Hour, g_RT_Minute);
+    RealTime_SetSyncWithServer(true);
+  }
+  else
+  {
+    RealTime_SetSyncWithServer(false);
   }
 
   // Restart the timer first.
@@ -167,6 +195,9 @@ stock void:RealTime_Sync(server_time = true)
 stock void:RealTime_SetInterval(interval, bool:restart_timer = true)
 {
   g_RT_TimerInterval = interval;
+
+  // Disable sync with server because interval has changed.
+  RealTime_SetSyncWithServer(false);
 
   if (restart_timer)
   {
@@ -197,15 +228,32 @@ stock void:RealTime_SetWorldTime(hour, minute, bool:restart_timer = true, bool:b
 forward void:RealTime_UpdateWorldTime();
 public void:RealTime_UpdateWorldTime()
 {
-  RealTime_SetMinute(RealTime_GetMinute() + 1, false);
-
-  if (RealTime_GetMinute() == 0)
+  if (RealTime_IsSyncWithServer())
   {
-    RealTime_SetHour(RealTime_GetHour() + 1, false);
-  }
+    static hour;
+    static minute;
 
-  RealTime_UpdatePlayerWorldTime();
-  CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
+    gettime(hour, minute);
+
+    if (hour != RealTime_GetHour() || minute != RealTime_GetMinute())
+    {
+      RealTime_SetWorldTime(hour, minute, false, true);
+      RealTime_UpdatePlayerWorldTime();
+      CallRemoteFunction("OnWorldTimeUpdate", "dd", hour, minute);
+    }
+  }
+  else
+  {
+    RealTime_SetMinute(RealTime_GetMinute() + 1, false);
+
+    if (RealTime_GetMinute() == 0)
+    {
+      RealTime_SetHour(RealTime_GetHour() + 1, false);
+    }
+
+    RealTime_UpdatePlayerWorldTime();
+    CallRemoteFunction("OnWorldTimeUpdate", "dd", RealTime_GetHour(), RealTime_GetMinute());
+  }
 }
 
 // Built-in callbacks
